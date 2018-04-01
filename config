@@ -1,0 +1,10 @@
+# pools to iterate
+# format: poolname, max concurrent scrubs during "night time", max concurrent scrubs during "day time"
+pools=( 
+  "rbd,2,1" 
+  "nvme,3,2" 
+)
+
+# define "night time" range from hour to hour
+# useful for minimizing impact during "production hours"
+nighttime=( "23" "04" )

@@ -1,0 +1,61 @@
+#!/bin/bash
+#
+# this is a deep scrub automation thing
+
+if [ "$1" = "debug" ]; then
+  debug=1
+else
+  debug=0
+fi
+
+logfile='/opt/deepscrubber/log'
+
+function log {
+  now=$(date +'[%F %H:%M:%S]')
+
+  if [ "$2" = "1" ]; then
+    if [ "$debug" = "1" ]; then
+      echo "$now deepscrubber: [debug] $1" | tee -a $logfile
+    fi
+  else
+    echo "$now deepscrubber: [info] $1" | tee -a $logfile
+  fi
+}
+
+# iterate over pools and queue
+for pool in "${pools[@]}"; do
+  poolName=$(echo "$pool" | cut -d',' -f1)
+
+  now=$(date +"%H")
+  # determine how we're looking at night time
+  if (( $now > ${nighttime[0]} )) || (( $now < ${nighttime[1]} )); then
+    maxScrubs=$(echo "$pool" | cut -d',' -f2)
+  else
+    maxScrubs=$(echo "$pool" | cut -d',' -f3)
+  fi
+
+  log "Inspecting pool $poolName" 1
+  log "Pool $poolName max scrubs $maxScrubs" 1
+
+  # save pgs to temp file
+  ceph pg ls-by-pool $poolName active > /tmp/.$$.pgs.$poolName
+
+  runningScrubs=$(grep scrubbing /tmp/.$$.pgs.$poolName -c)
+
+  # running scrubs is larger or equal to maxScrubs
+  if ! (( $runningScrubs < $maxScrubs )); then
+    log "Cannot queue deep scrub for pool $poolName; Running scrubs ! < max scrubs ($runningScrubs, $maxScrubs)" 1
+    rm -f /tmp/.$$.pgs.$poolName
+    continue
+  fi
+
+  # how many deep scrubs can we queue?
+  limit=$(($maxScrubs - $runningScrubs))
+
+  # run $limit amount of scrubs
+  while read pg; do
+    log "Starting deep scrub of pg $pg in pool $poolName"
+    ceph pg deep-scrub $pg >/dev/null 2>&1
+  done < <(grep active /tmp/.$$.pgs.$poolName | grep -v scrubbing | awk {'print $20, $1'} | sort -k1 | head -n $limit | awk {'print $2'})
+  rm -f /tmp/.$$.pgs.$poolName
+done
