@@ -12,7 +12,11 @@ ceph-deepscrubber is a very simple tool that enables you to queue X amount of de
 2. Edit the config file:   
 `nano /opt/deepscrubber/config`
 
-Done. You can invoke it however often you want with a cronjob:
+## Using
+
+*hint:* make sure you set the nodeep-scrub flag on so that deep scrubs are not queued automatically: `ceph osd set nodeep-scrub`
+
+You can invoke it however often you want with a cronjob:
 ```
 MAILTO=""
 */30 * * * * /opt/deepscrubber/deepscrubber
