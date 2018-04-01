@@ -2,6 +2,9 @@
 #
 # this is a deep scrub automation thing
 
+SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
+source "$SCRIPTPATH/config"
+
 if [ "$1" = "debug" ]; then
   debug=1
 else
@@ -10,15 +13,30 @@ fi
 
 logfile='/opt/deepscrubber/log'
 
+function syslog {
+  logger -t "ceph-deepscrubber" "$1"
+}
+
 function log {
+  if [ "$debug" = "1" ] && [ "$2" = "1" ]; then
+    msg="[debug] $1"
+  else
+    msg="[info] $1"
+  fi
+
+  if [ "logtype" = "syslog" ]; then
+    syslog "$msg"
+    return
+  fi
+
   now=$(date +'[%F %H:%M:%S]')
 
   if [ "$2" = "1" ]; then
     if [ "$debug" = "1" ]; then
-      echo "$now deepscrubber: [debug] $1" | tee -a $logfile
+      echo "$now deepscrubber: $msg" | tee -a $logfile
     fi
   else
-    echo "$now deepscrubber: [info] $1" | tee -a $logfile
+    echo "$now deepscrubber: $msg" | tee -a $logfile
   fi
 }
 

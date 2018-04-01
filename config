@@ -8,3 +8,12 @@ pools=(
 # define "night time" range from hour to hour
 # useful for minimizing impact during "production hours"
 nighttime=( "23" "04" )
+
+# logging settings
+# logtype=syslog, file
+logtype=syslog
+
+# file settings
+# logfile=path
+# absolute or relative to deepscrubber
+logfile=log
