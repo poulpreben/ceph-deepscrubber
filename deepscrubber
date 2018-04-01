@@ -24,7 +24,7 @@ function log {
     msg="[info] $1"
   fi
 
-  if [ "logtype" = "syslog" ]; then
+  if [ "$logtype" = "syslog" ]; then
     syslog "$msg"
     return
   fi

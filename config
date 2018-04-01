@@ -11,7 +11,7 @@ nighttime=( "23" "04" )
 
 # logging settings
 # logtype=syslog, file
-logtype=syslog
+logtype=file
 
 # file settings
 # logfile=path
