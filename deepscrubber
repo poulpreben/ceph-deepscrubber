@@ -74,6 +74,6 @@ for pool in "${pools[@]}"; do
   while read pg; do
     log "Starting deep scrub of pg $pg in pool $poolName"
     ceph pg deep-scrub $pg >/dev/null 2>&1
-  done < <(grep active /tmp/.$$.pgs.$poolName | grep -v scrubbing | awk {'print $20, $1'} | sort -k1 | head -n $limit | awk {'print $2'})
+  done < <(grep active /tmp/.$$.pgs.$poolName | grep -v scrubbing | awk {'print $23, $1'} | sort -k1 | head -n $limit | awk {'print $2'})
   rm -f /tmp/.$$.pgs.$poolName
 done
