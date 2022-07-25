@@ -46,7 +46,7 @@ for pool in "${pools[@]}"; do
 
   now=$(date +"%H")
   # determine how we're looking at night time
-  if (( $now > ${nighttime[0]} )) || (( $now < ${nighttime[1]} )); then
+  if (( ${now#0} > ${nighttime[0]#0} )) || (( ${now#0} < ${nighttime[1]#0} )); then
     maxScrubs=$(echo "$pool" | cut -d',' -f2)
     log "[ day ] max scrubs for $poolName: $maxScrubs" 1
   else
