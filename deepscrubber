@@ -2,7 +2,7 @@
 #
 # this is a deep scrub automation thing
 
-SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
+SCRIPTPATH="$(dirname "$(readlink -f "$0")")"
 source "$SCRIPTPATH/config"
 
 if [ "$1" = "debug" ]; then
@@ -48,8 +48,10 @@ for pool in "${pools[@]}"; do
   # determine how we're looking at night time
   if (( $now > ${nighttime[0]} )) || (( $now < ${nighttime[1]} )); then
     maxScrubs=$(echo "$pool" | cut -d',' -f2)
+    log "[ day ] max scrubs for $poolName: $maxScrubs" 1
   else
     maxScrubs=$(echo "$pool" | cut -d',' -f3)
+    log "[night] max scrubs for $poolName: $maxScrubs" 1
   fi
 
   log "Inspecting pool $poolName" 1
@@ -74,6 +76,6 @@ for pool in "${pools[@]}"; do
   while read pg; do
     log "Starting deep scrub of pg $pg in pool $poolName"
     ceph pg deep-scrub $pg >/dev/null 2>&1
-  done < <(grep active /tmp/.$$.pgs.$poolName | grep -v scrubbing | awk {'print $23, $1'} | sort -k1 | head -n $limit | awk {'print $2'})
+  done < <(grep active /tmp/.$$.pgs.$poolName | grep -v scrubbing | awk {'print $17, $1'} | sort -k1 | head -n $limit | awk {'print $2'})
   rm -f /tmp/.$$.pgs.$poolName
 done
