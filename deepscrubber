@@ -60,7 +60,7 @@ for pool in "${pools[@]}"; do
   # save pgs to temp file
   ceph pg ls-by-pool $poolName active > /tmp/.$$.pgs.$poolName
 
-  runningScrubs=$(grep scrubbing /tmp/.$$.pgs.$poolName -c)
+  runningScrubs=$(grep "scrubbing+deep" /tmp/.$$.pgs.$poolName -c)
 
   # running scrubs is larger or equal to maxScrubs
   if ! (( $runningScrubs < $maxScrubs )); then
@@ -76,6 +76,6 @@ for pool in "${pools[@]}"; do
   while read pg; do
     log "Starting deep scrub of pg $pg in pool $poolName"
     ceph pg deep-scrub $pg >/dev/null 2>&1
-  done < <(grep active /tmp/.$$.pgs.$poolName | grep -v scrubbing | awk {'print $17, $1'} | sort -k1 | head -n $limit | awk {'print $2'})
+  done < <(grep active /tmp/.$$.pgs.$poolName | grep -v "scrubbing+deep" | awk {'print $17, $1'} | sort -k1 | head -n $limit | awk {'print $2'})
   rm -f /tmp/.$$.pgs.$poolName
 done
